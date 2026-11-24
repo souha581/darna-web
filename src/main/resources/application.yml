@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: darna-web
+  datasource:
+    url: jdbc:h2:mem:darna;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 8080
+
+app:
+  seed:
+    enabled: true
+    owner-username: owner
+    owner-password: ${APP_OWNER_PASSWORD:owner123}
+    resident-username: resident
+    resident-password: ${APP_RESIDENT_PASSWORD:resident123}
+    ouvrier-username: ouvrier
+    ouvrier-password: ${APP_OUVRIER_PASSWORD:ouvrier123}

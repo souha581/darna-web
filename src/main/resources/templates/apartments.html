@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Appartements — DARNA</title>
+    <link rel="stylesheet" th:href="@{/css/darna.css}">
+</head>
+<body>
+<nav class="navbar">
+    <a th:href="@{/dashboard}" class="brand">DARNA</a>
+    <div class="nav-links">
+        <a th:href="@{/dashboard}">Tableau de bord</a>
+        <a th:href="@{/apartments}">Appartements</a>
+        <a th:href="@{/charges}">Charges & Paiements</a>
+        <a th:href="@{/repairs}">Signalements</a>
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-sm btn-danger">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <div class="card">
+        <h3>Ajouter un Appartement</h3>
+        <form th:action="@{/apartments/add}" method="post" class="form-inline">
+            <div style="flex: 1; min-width: 140px;">
+                <label>Résidence</label>
+                <input name="residenceName" type="text" value="Horizon" required>
+            </div>
+            <div style="width: 110px;">
+                <label>Bâtiment</label>
+                <input name="buildingName" type="text" value="A1" required>
+            </div>
+            <div style="width: 100px;">
+                <label>N° Lot</label>
+                <input name="unitNumber" type="text" required placeholder="A302">
+            </div>
+            <div style="width: 90px;">
+                <label>Étage</label>
+                <input name="floor" type="number" min="0" value="1" required>
+            </div>
+            <div style="width: 100px;">
+                <label>Surface (m²)</label>
+                <input name="surfaceM2" type="number" step="1" min="15" value="75" required>
+            </div>
+            <div style="width: 100px;">
+                <label>Typologie</label>
+                <select name="typology">
+                    <option value="S+0">S+0</option>
+                    <option value="S+1" selected>S+1</option>
+                    <option value="S+2">S+2</option>
+                    <option value="S+3">S+3</option>
+                </select>
+            </div>
+            <div style="width: 130px;">
+                <label>Loyer (TND)</label>
+                <input name="monthlyRentTnd" type="number" step="10" min="100" value="900" required>
+            </div>
+            <div style="flex: 2; min-width: 200px;">
+                <label>Description</label>
+                <input name="description" type="text" placeholder="Équipements...">
+            </div>
+            <button type="submit" class="btn">Ajouter</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Patrimoine Immobilier</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Localisation</th>
+                <th>Type & Surface</th>
+                <th>Loyer (TND)</th>
+                <th>Statut</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="apt : ${apartments}">
+                <td th:text="${apt.fullLocation}"></td>
+                <td th:text="${apt.typology + ' · ' + apt.surfaceM2 + ' m²'}"></td>
+                <td th:text="${apt.monthlyRentTnd + ' TND'}"></td>
+                <td>
+                    <span th:if="${apt.available}" class="pill pill-green">LIBRE</span>
+                    <span th:if="${!apt.available}" class="pill pill-blue">OCCUPÉ</span>
+                </td>
+                <td>
+                    <form th:if="${apt.available}" th:action="@{/apartments/{id}/delete(id=${apt.id})}" method="post">
+                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

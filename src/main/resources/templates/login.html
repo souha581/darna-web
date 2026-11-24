@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion — DARNA</title>
+    <link rel="stylesheet" th:href="@{/css/darna.css}">
+</head>
+<body>
+<div class="card auth-card">
+    <h2 style="color: var(--emerald);">DARNA — Connexion</h2>
+    <p style="color: var(--muted); margin-top: -0.4rem;">Gestion de Résidences & Copropriétés</p>
+
+    <div th:if="${param.error}" class="alert alert-error">Identifiants invalides.</div>
+    <div th:if="${param.logout}" class="alert alert-success">Déconnexion réussie.</div>
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <form th:action="@{/login}" method="post">
+        <div class="form-group">
+            <label for="username">Identifiant / Email</label>
+            <input id="username" name="username" type="text" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input id="password" name="password" type="password" required>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Se connecter</button>
+    </form>
+
+    <p style="margin-top: 1rem; text-align: center; font-size: 0.9rem;">
+        <a th:href="@{/register}">Créer un compte</a> · <a th:href="@{/catalog}">Catalogue visiteur</a>
+    </p>
+</div>
+</body>
+</html>

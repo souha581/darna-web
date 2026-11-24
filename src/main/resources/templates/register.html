@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription — DARNA</title>
+    <link rel="stylesheet" th:href="@{/css/darna.css}">
+</head>
+<body>
+<div class="card auth-card">
+    <h2 style="color: var(--emerald);">DARNA — Inscription</h2>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <form th:action="@{/register}" method="post">
+        <div class="form-group">
+            <label for="fullName">Nom complet</label>
+            <input id="fullName" name="fullName" type="text" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Identifiant / Email</label>
+            <input id="username" name="username" type="text" required minlength="3">
+        </div>
+        <div class="form-group">
+            <label for="phone">Téléphone</label>
+            <input id="phone" name="phone" type="text">
+        </div>
+        <div class="form-group">
+            <label for="role">Profil</label>
+            <select id="role" name="role">
+                <option value="OWNER">Propriétaire / Syndic</option>
+                <option value="OUVRIER">Ouvrier (Prestataire)</option>
+                <option value="RESIDENT">Résident</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="password">Mot de passe (min. 6 caractères)</label>
+            <input id="password" name="password" type="password" required minlength="6">
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Créer mon compte</button>
+    </form>
+
+    <p style="margin-top: 1rem; text-align: center; font-size: 0.9rem;">
+        Déjà inscrit ? <a th:href="@{/login}">Se connecter</a>
+    </p>
+</div>
+</body>
+</html>

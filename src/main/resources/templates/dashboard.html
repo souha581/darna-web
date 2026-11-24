@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tableau de bord — DARNA</title>
+    <link rel="stylesheet" th:href="@{/css/darna.css}">
+</head>
+<body>
+<nav class="navbar">
+    <a th:href="@{/dashboard}" class="brand">DARNA</a>
+    <div class="nav-links">
+        <a th:href="@{/dashboard}">Tableau de bord</a>
+        <a th:if="${user.role.name() == 'OWNER'}" th:href="@{/apartments}">Appartements</a>
+        <a th:if="${user.role.name() != 'OUVRIER'}" th:href="@{/charges}">Charges & Paiements</a>
+        <a th:href="@{/repairs}">Signalements & Interventions</a>
+        <a th:href="@{/catalog}">Catalogue Public</a>
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-sm btn-danger">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <h2 th:text="'Bonjour, ' + ${user.fullName}">Bonjour</h2>
+        <p style="color: var(--muted); margin: 0;"
+           th:text="'Espace ' + ${user.role.name()} + ' · Identifiant : ' + ${user.username}"></p>
+    </div>
+
+    <div class="stats-row" th:if="${user.role.name() == 'OWNER'}">
+        <div class="stat-box">
+            <div class="stat-label">Total Recouvré</div>
+            <div class="stat-value" th:text="${totalRecovered + ' TND'}">0.00 TND</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Reste dû</div>
+            <div class="stat-value" style="color: var(--warning);" th:text="${totalRemaining + ' TND'}">0.00 TND</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Taux d'occupation</div>
+            <div class="stat-value" th:text="${occupiedCount + ' / ' + totalApartments}">0 / 0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Signalements</div>
+            <div class="stat-value" th:text="${repairsCount}">0</div>
+        </div>
+    </div>
+
+    <div class="stats-row" th:if="${user.role.name() == 'RESIDENT'}">
+        <div class="stat-box">
+            <div class="stat-label">Charges Réglées</div>
+            <div class="stat-value" th:text="${totalRecovered + ' TND'}">0.00 TND</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Reste à Payer</div>
+            <div class="stat-value" style="color: var(--warning);" th:text="${totalRemaining + ' TND'}">0.00 TND</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Mes Signalements</div>
+            <div class="stat-value" th:text="${repairsCount}">0</div>
+        </div>
+    </div>
+
+    <div class="stats-row" th:if="${user.role.name() == 'OUVRIER'}">
+        <div class="stat-box">
+            <div class="stat-label">Spécialité</div>
+            <div class="stat-value" style="font-size: 1.2rem;" th:text="${user.specialty ?: 'Généraliste'}">-</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Interventions Assignées</div>
+            <div class="stat-value" th:text="${repairsCount}">0</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
