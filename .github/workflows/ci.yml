@@ -1,0 +1,61 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "feat/**"
+      - "feature/**"
+      - "ci/**"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-package:
+    name: Build, Quality, Tests & Package Artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 with Maven cache
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: "maven"
+
+      - name: Generate version tag from commit SHA
+        id: meta
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "version=1.0.0-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Run Checkstyle, Tests, SpotBugs & JaCoCo Gate
+        run: mvn -B verify -Dspring.profiles.active=ci
+
+      - name: Upload test, coverage & static analysis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports-${{ steps.meta.outputs.short_sha }}
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
+            target/spotbugsXml.xml
+          retention-days: 14
+
+      - name: Upload versioned JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: darna-web-${{ steps.meta.outputs.version }}
+          path: target/darna-web-*.jar
+          retention-days: 14
