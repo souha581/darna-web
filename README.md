@@ -59,3 +59,4 @@ mvn -B clean verify -Dspring.profiles.active=ci
 - Guide de supervision, diagnostic d'incident & rollback (Lot 7) : [docs/SUPERVISION_ET_INCIDENTS.md](docs/SUPERVISION_ET_INCIDENTS.md)
 - Fiche d'incident (Lot 7) : [docs/FICHE_INCIDENT.md](docs/FICHE_INCIDENT.md)
 - Plan de soutenance, indicateurs & fiche de remise : [docs/FICHE_REMISE_ET_SOUTENANCE.md](docs/FICHE_REMISE_ET_SOUTENANCE.md)
+- Support de présentation (soutenance) : [docs/PRESENTATION_SOUTENANCE.md](docs/PRESENTATION_SOUTENANCE.md)
