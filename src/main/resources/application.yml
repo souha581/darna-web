@@ -12,14 +12,14 @@ spring:
       ddl-auto: update
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 app:
   seed:
-    enabled: true
-    owner-username: owner
-    owner-password: ${APP_OWNER_PASSWORD:owner123}
-    resident-username: resident
-    resident-password: ${APP_RESIDENT_PASSWORD:resident123}
-    ouvrier-username: ouvrier
-    ouvrier-password: ${APP_OUVRIER_PASSWORD:ouvrier123}
+    enabled: ${APP_SEED_ENABLED:false}
+    owner-username: ${APP_OWNER_USERNAME:owner}
+    owner-password: ${APP_OWNER_PASSWORD:}
+    resident-username: ${APP_RESIDENT_USERNAME:resident}
+    resident-password: ${APP_RESIDENT_PASSWORD:}
+    ouvrier-username: ${APP_OUVRIER_USERNAME:ouvrier}
+    ouvrier-password: ${APP_OUVRIER_PASSWORD:}
