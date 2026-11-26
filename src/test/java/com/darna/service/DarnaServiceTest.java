@@ -11,6 +11,7 @@ import com.darna.repository.ApartmentRepository;
 import com.darna.repository.AppUserRepository;
 import com.darna.repository.ChargeRepository;
 import com.darna.repository.RepairRequestRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +53,8 @@ class DarnaServiceTest {
                 chargeRepository,
                 repairRepository,
                 userRepository,
-                new BCryptPasswordEncoder()
+                new BCryptPasswordEncoder(),
+                new SimpleMeterRegistry()
         );
     }
 

@@ -11,3 +11,7 @@ spring:
 app:
   seed:
     enabled: false
+
+logging:
+  file:
+    name: target/test-logs/darna-ci.log
