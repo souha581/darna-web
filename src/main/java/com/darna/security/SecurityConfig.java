@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/catalog", "/rent", "/login", "/register", "/css/**").permitAll()
+                        .requestMatchers("/actuator/health/**", "/actuator/info", "/actuator/metrics/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/apartments/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/apartments/**").hasRole("OWNER")
                         .requestMatchers("/apartments/**", "/charges/issue", "/repairs/assign").hasRole("OWNER")

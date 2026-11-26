@@ -13,12 +13,18 @@ RUN mvn -B package -DskipTests
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-RUN groupadd --system appgroup \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system appgroup \
     && useradd --system --gid appgroup --create-home appuser
 
 COPY --from=build /workspace/target/darna-web-*.jar /app/app.jar
 
 USER appuser
 EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -fsS http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

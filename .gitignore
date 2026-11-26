@@ -4,6 +4,7 @@ logs/
 .env.*
 !.env.example
 *.log
+deployments/
 .idea/
 *.iml
 .vscode/

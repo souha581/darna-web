@@ -81,6 +81,13 @@ class DarnaApiIntegrationTest {
     }
 
     @Test
+    void actuatorHealthEndpointIsUp() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
+    }
+
+    @Test
     void publicCatalogReturnsOnlyAvailableApartments() throws Exception {
         mockMvc.perform(get("/api/apartments"))
                 .andExpect(status().isOk())
