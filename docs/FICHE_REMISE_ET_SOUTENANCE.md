@@ -40,4 +40,4 @@
 | **Environnement de test et procédure d'accès** | Stack Docker Compose (`docker-compose.test.yml`) sur port `8081` + Prometheus `9090` |
 | **Contrôle(s) de sécurité intégré(s)** | Gitleaks (secrets), Trivy FS & Image (vulnérabilités), SpotBugs (analyse statique) |
 | **Procédure de rollback** | Workflow `.github/workflows/rollback.yml` + `scripts/rollback.sh` / `rollback.ps1` |
-| **Date de remise** | *À compléter lors de la remise* |
+| **Date de remise** | 26/11/2026 |
