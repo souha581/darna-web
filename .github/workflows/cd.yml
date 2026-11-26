@@ -1,0 +1,87 @@
+name: CD Deploy to Test
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Tag GHCR a deployer (ex: sha-abc1234, develop, latest)"
+        required: true
+        default: "develop"
+
+jobs:
+  deploy-test:
+    name: Deploy & Verify on Test Environment
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: test
+      url: ${{ vars.TEST_APP_URL || 'http://localhost:8081' }}
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve target GHCR image
+        id: resolve
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.image_tag }}"
+          else
+            SHORT_SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+            TAG="sha-${SHORT_SHA}"
+          fi
+          echo "image_ref=ghcr.io/${REPO_LOWER}:${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy via SSH (when remote DEPLOY_HOST secret is configured)
+        if: ${{ secrets.DEPLOY_HOST != '' }}
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ vars.DEPLOY_PATH || '~/darna-web' }}
+            git pull origin main
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            DB_PASSWORD="${{ secrets.TEST_DB_PASSWORD }}" \
+            APP_OWNER_PASSWORD="${{ secrets.TEST_OWNER_PASSWORD }}" \
+            APP_RESIDENT_PASSWORD="${{ secrets.TEST_RESIDENT_PASSWORD }}" \
+            APP_OUVRIER_PASSWORD="${{ secrets.TEST_OUVRIER_PASSWORD }}" \
+            bash scripts/deploy-test.sh "${{ steps.resolve.outputs.image_ref }}" "${{ steps.resolve.outputs.version }}"
+
+      - name: Deploy & smoke-test in Docker test stack
+        if: ${{ secrets.DEPLOY_HOST == '' }}
+        env:
+          TEST_DB_SECRET: ${{ secrets.TEST_DB_PASSWORD }}
+          TEST_OWNER_SECRET: ${{ secrets.TEST_OWNER_PASSWORD }}
+          TEST_RESIDENT_SECRET: ${{ secrets.TEST_RESIDENT_PASSWORD }}
+          TEST_OUVRIER_SECRET: ${{ secrets.TEST_OUVRIER_PASSWORD }}
+          APP_SEED_ENABLED: "true"
+        run: |
+          export DB_PASSWORD="${TEST_DB_SECRET:-$(openssl rand -hex 16)}"
+          export APP_OWNER_PASSWORD="${TEST_OWNER_SECRET:-$(openssl rand -hex 12)}"
+          export APP_RESIDENT_PASSWORD="${TEST_RESIDENT_SECRET:-$(openssl rand -hex 12)}"
+          export APP_OUVRIER_PASSWORD="${TEST_OUVRIER_SECRET:-$(openssl rand -hex 12)}"
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          bash scripts/deploy-test.sh "${{ steps.resolve.outputs.image_ref }}" "${{ steps.resolve.outputs.version }}"
+          docker compose -f docker-compose.test.yml ps
+          docker compose -f docker-compose.test.yml logs --tail=40 app-test
+          docker compose -f docker-compose.test.yml down
+
+      - name: Archive deployment trace
+        if: always() && hashFiles('deployments/history.log') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-deployment-trace-${{ steps.resolve.outputs.version }}
+          path: deployments/history.log
+          retention-days: 30

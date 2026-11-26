@@ -10,6 +10,8 @@ import com.darna.repository.ApartmentRepository;
 import com.darna.repository.AppUserRepository;
 import com.darna.repository.ChargeRepository;
 import com.darna.repository.RepairRequestRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,17 +34,30 @@ public class DarnaService {
     private final RepairRequestRepository repairRepository;
     private final AppUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Counter rentalsCounter;
+    private final Counter paymentsCounter;
+    private final Counter repairsCounter;
 
     public DarnaService(ApartmentRepository apartmentRepository,
                         ChargeRepository chargeRepository,
                         RepairRequestRepository repairRepository,
                         AppUserRepository userRepository,
-                        PasswordEncoder passwordEncoder) {
+                        PasswordEncoder passwordEncoder,
+                        MeterRegistry meterRegistry) {
         this.apartmentRepository = apartmentRepository;
         this.chargeRepository = chargeRepository;
         this.repairRepository = repairRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.rentalsCounter = Counter.builder("darna.rentals.completed")
+                .description("Direct online rentals completed")
+                .register(meterRegistry);
+        this.paymentsCounter = Counter.builder("darna.charges.paid")
+                .description("Charge payments recorded")
+                .register(meterRegistry);
+        this.repairsCounter = Counter.builder("darna.repairs.reported")
+                .description("Maintenance repairs reported")
+                .register(meterRegistry);
     }
 
     public List<Apartment> filterPublicCatalog(String typology, Double maxRentTnd) {
@@ -139,6 +154,7 @@ public class DarnaService {
         firstMonth.setLastPaymentMode(paymentMode);
         firstMonth.refreshStatus();
         chargeRepository.save(firstMonth);
+        rentalsCounter.increment();
 
         LOG.info("Direct rental completed: apartmentId={}, resident='{}', mode='{}'",
                 apt.getId(), savedUser.getUsername(), paymentMode);
@@ -191,6 +207,7 @@ public class DarnaService {
         charge.setLastPaymentMode(paymentMode);
         charge.refreshStatus();
         Charge saved = chargeRepository.save(charge);
+        paymentsCounter.increment();
         LOG.info("Charge payment recorded: chargeId={}, amount={} TND, status={}",
                 saved.getId(), paymentTnd, saved.getStatus());
         return saved;
@@ -212,6 +229,7 @@ public class DarnaService {
         Apartment apt = getApartment(resident.getApartmentId());
         RepairRequest repair = new RepairRequest(apt, resident, category.trim(), priority.trim(), description.trim());
         RepairRequest saved = repairRepository.save(repair);
+        repairsCounter.increment();
         LOG.info("Repair reported: id={}, apt={}, category={}", saved.getId(), apt.getUnitNumber(), category);
         return saved;
     }
