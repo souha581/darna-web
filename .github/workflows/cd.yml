@@ -25,6 +25,8 @@ jobs:
     permissions:
       contents: read
       packages: read
+    env:
+      DEPLOY_HOST_CONFIGURED: ${{ secrets.DEPLOY_HOST }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,7 +45,7 @@ jobs:
           echo "version=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Deploy via SSH (when remote DEPLOY_HOST secret is configured)
-        if: ${{ secrets.DEPLOY_HOST != '' }}
+        if: env.DEPLOY_HOST_CONFIGURED != ''
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -60,7 +62,7 @@ jobs:
             bash scripts/deploy-test.sh "${{ steps.resolve.outputs.image_ref }}" "${{ steps.resolve.outputs.version }}"
 
       - name: Deploy & smoke-test in Docker test stack
-        if: ${{ secrets.DEPLOY_HOST == '' }}
+        if: env.DEPLOY_HOST_CONFIGURED == ''
         env:
           TEST_DB_SECRET: ${{ secrets.TEST_DB_PASSWORD }}
           TEST_OWNER_SECRET: ${{ secrets.TEST_OWNER_PASSWORD }}
