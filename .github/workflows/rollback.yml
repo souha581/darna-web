@@ -55,6 +55,7 @@ jobs:
       - name: Simulate & verify rollback in Docker test stack
         if: env.DEPLOY_HOST_CONFIGURED == ''
         env:
+          DARNA_IMAGE: ${{ steps.target.outputs.image_ref }}
           TEST_DB_SECRET: ${{ secrets.TEST_DB_PASSWORD }}
           TEST_OWNER_SECRET: ${{ secrets.TEST_OWNER_PASSWORD }}
           TEST_RESIDENT_SECRET: ${{ secrets.TEST_RESIDENT_PASSWORD }}
